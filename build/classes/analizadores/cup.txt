@@ -1,0 +1,127 @@
+/*--------------- 1ra Area: Codigo de Usuario -----------------------*/
+//-------> importaciones, paquetes
+package analizadores;
+import java_cup.runtime.Symbol;
+import java.util.LinkedList;
+
+//------> Codigo para el parser,variables, metodos
+parser code
+{:
+    public String resultado="";
+    public static LinkedList<TError> TablaES = new LinkedList<TError>(); 
+
+    //Metodo al que se llama automaticamente ante algun error sintactico
+    public void syntax_error(Symbol s)
+    {        
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+        
+        System.out.println("!!!!!!! Error Sintactico Recuperado !!!!!!!");
+        System.out.println("\t\tLexema: "+lexema);
+        System.out.println("\t\tFila: "+fila);
+        System.out.println("\t\tColumna: "+columna);
+
+        TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        TablaES.add(datos);
+       
+        
+    }
+
+    //Metodo al que se llama en el momento en que ya no es posible una recuperacion de errores
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
+    {        
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+        
+        System.out.println("!!!!!!! Error Sintactico, Panic Mode !!!!!!! ");
+        System.out.println("\t\tLexema: "+lexema);
+        System.out.println("\t\tFila: "+fila);
+        System.out.println("\t\tColumna: "+columna);
+
+        TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        TablaES.add(datos);
+     
+    }
+:}
+
+//------> Codigo para las acciones gramaticales
+action code
+{:
+:}
+
+/*--------------- 2da Area: Declaraciones -----------------------*/
+//------> declaracion de terminales 
+terminal $,alfanumerio,letras,cadena_texto,identificador,mas,menos,por,div,para,parc,asig,comp,dist,menor,mayor,or,and,Labre,Lcierra,Cabre,Cciera,Pcoma,Pabre,Pcierra,set,IF,ELSE,WHILE,PUTW,puts;
+terminal String num;
+
+//------> declaracion de no terminales
+non terminal String INICIO,Expresion,Declaracion,Declaraciones,Cuerpo,bloqueSentencias,Sentencia,sentencias;
+non terminal Condicion,sentif,sentElse,sentWhile,sentAsignacion,sentPutw,sentPuts,sentBreak;
+ 
+//----> precedencia de menor a mayor 
+precedence left mas, menos;
+precedence left por, div;
+precedence left and, or;
+
+start with INICIO;
+
+INICIO ::= Declaraciones Cuerpo | Cuerpo;
+Declaraciones::= Declaracion Declaraciones | Declaracion;
+Declaracion::= set identificador Pcoma|;
+//Cuerpo::= MAIN Pabre Pcierra Labre bloqueSentencias Lcierra ;
+Cuerpo:: Declaraciones| bloqueSentencias;
+bloqueSentencias::= sentencias | ;
+sentencias::= Sentencia sentencias | Sentencia;
+
+
+Expresion::= Expresion:a mas Expresion:b {: int val1= Integer.parseInt(a);
+                    int val2= Integer.parseInt(b);
+                    int r = val1+val2;
+                    RESULT = String.valueOf(r); :}
+    |Expresion:a menos Expresion:b {: int val1= Integer.parseInt(a);
+                    int val2= Integer.parseInt(b);
+                    int r = val1-val2;
+                    RESULT = String.valueOf(r); :}
+    |Expresion:a div Expresion:b {: int val1= Integer.parseInt(a);
+                    int val2= Integer.parseInt(b);
+                    int r = val1/val2;
+                    RESULT = String.valueOf(r); :}
+    |Expresion:a por Expresion:b {: int val1= Integer.parseInt(a);
+                    int val2= Integer.parseInt(b);
+                    int r = val1*val2;
+                    RESULT = String.valueOf(r); :}
+    |identificador
+    |para Expresion:a {: RESULT = a; :} parc
+    |num:a {: RESULT = a; :};
+
+
+Condicion::=Condicion or Condicion|
+            Condicion and Condicion|
+            Expresion comp Expresion|
+            Expresion mayor Expresion|
+            Expresion menor Expresion|
+            Expresion dist Expresion|
+            Pabre Condicion Pcierra;
+
+sentif::= IF Labre Condicion Lcierra 
+           Labre  bloqueSentencias Lcierra sentElse;
+sentElse::= ELSE Labre bloqueSentencias Lcierra|;
+
+sentWhile::= WHILE Pabre Condicion Pcierra
+            Labre bloqueSentencias Lcierra;
+sentAsignacion::=identificador asig  Expresion Pcoma;
+
+sentPutw::= PUTW Pabre Expresion Pcierra Pcoma;
+sentPuts::= puts Pabre cadena_texto  Pcierra | puts Pabre  $ identificador Pcierra |
+            puts  Labre cadena_texto Lcierra ;
+sentBreak::= BREAK Pcoma;
+ 
+Sentencia::=sentif|
+            sentWhile|
+            sentAsignacion|
+            sentPutw|
+            sentPuts|
+            sentBreak;
+

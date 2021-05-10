@@ -1,0 +1,92 @@
+/*-----area 1: codigo de usuario */
+// --- paquetes o inportar--------
+
+package analizadores;
+import java_cup.runtime.*;
+import java.util.*;
+
+/*-----area 2: opciones y declaraciones*/
+%%
+%{
+    //---codigo de en sentaxis java
+       public static LinkedList<TError> TablaEL= new LinkedList<TError>();
+%}
+
+//---directivas de jlex
+%public 
+%class Analizador_Lexico
+%cupsym simbolos
+%cup
+%char
+%column
+%full
+%ignorecase
+%line
+%unicode
+
+//---expreciones regurales
+
+numero = [0-9]+
+letras = [A-Za-z_]+
+alfanumerio= ({letras}|{numero})
+identificador = ({letras})({numero})*
+cadena_texto = \"([\x20-\x21\x23-\xFE])*\"
+
+
+//--- Estados
+
+%%
+
+
+/*-----area 3: reglas lexicas*/
+
+<YYINITIAL> "+"     {System.out.println("reconocio "+yytext()+" mas"); return new Symbol(simbolos.mas, yycolumn, yyline,yytext());}
+<YYINITIAL> "-"     {System.out.println("reconocio "+yytext()+" menos");return new Symbol(simbolos.menos, yycolumn, yyline,yytext());}
+<YYINITIAL> "*"     {System.out.println("reconocio "+yytext()+" por");return new Symbol(simbolos.por, yycolumn, yyline,yytext());}
+<YYINITIAL> "**"     {System.out.println("reconocio "+yytext()+" potencia");return new Symbol(simbolos.pot, yycolumn, yyline,yytext());}
+<YYINITIAL> "/"     {System.out.println("reconocio "+yytext()+" div");return new Symbol(simbolos.div, yycolumn, yyline,yytext());}
+<YYINITIAL> "=="     {System.out.println("reconocio "+yytext()+" comparacion");return new Symbol(simbolos.comp, yycolumn, yyline,yytext());}
+<YYINITIAL> "<>"     {System.out.println("reconocio "+yytext()+" distinto");return new Symbol(simbolos.dist, yycolumn, yyline,yytext());}
+<YYINITIAL> "<"     {System.out.println("reconocio "+yytext()+" menor que");return new Symbol(simbolos.menor, yycolumn, yyline,yytext());}
+<YYINITIAL> ">"     {System.out.println("reconocio "+yytext()+" mayor que");return new Symbol(simbolos.mayor, yycolumn, yyline,yytext());}
+<YYINITIAL> "||"     {System.out.println("reconocio "+yytext()+" OR");return new Symbol(simbolos.or, yycolumn, yyline,yytext());}
+<YYINITIAL> "&&"     {System.out.println("reconocio "+yytext()+" AND");return new Symbol(simbolos.and, yycolumn, yyline,yytext());}
+<YYINITIAL> "{"     {System.out.println("reconocio "+yytext()+" parent Labre");return new Symbol(simbolos.Labre, yycolumn, yyline,yytext());}
+<YYINITIAL> "}"     {System.out.println("reconocio "+yytext()+" Parent Lcierra");return new Symbol(simbolos.Lcierra, yycolumn, yyline,yytext());}
+<YYINITIAL> "["     {System.out.println("reconocio "+yytext()+" Corchetes ABRE");return new Symbol(simbolos.Cabre, yycolumn, yyline,yytext());}
+<YYINITIAL> "]"     {System.out.println("reconocio "+yytext()+" corchetes CIERRA");return new Symbol(simbolos.Cciera, yycolumn, yyline,yytext());}
+<YYINITIAL> "#"     {System.out.println("reconocio "+yytext()+"Comentario");return new Symbol(simbolos.comentario, yycolumn, yyline,yytext());}
+//<YYINITIAL> "\n"     {System.out.println("reconocio "+yytext()+"salto de linea");return new Symbol(simbolos.salto, yycolumn, yyline,yytext());}
+
+//-----simbolos de Expreciones regulares
+
+<YYINITIAL>"set"    {System.out.println("reconocio "+yytext()+" set "); return new Symbol(simbolos.set, yycolumn, yyline,yytext());}
+
+<YYINITIAL>"IF"    {System.out.println("reconocio "+yytext()+" if "); return new Symbol(simbolos.IF, yycolumn, yyline,yytext());}
+<YYINITIAL>"ELSE"    {System.out.println("reconocio "+yytext()+" else "); return new Symbol(simbolos.ELSE, yycolumn, yyline,yytext());}
+<YYINITIAL>"WHILE"    {System.out.println("reconocio "+yytext()+" while "); return new Symbol(simbolos.WHILE, yycolumn, yyline,yytext());}
+<YYINITIAL>"puts"    {System.out.println("reconocio "+yytext()+" puts "); return new Symbol(simbolos.puts, yycolumn, yyline,yytext());}
+<YYINITIAL>"$"    {System.out.println("reconocio "+yytext()+" dollar "); return new Symbol(simbolos.$, yycolumn, yyline,yytext());}
+<YYINITIAL>"expr"    {System.out.println("reconocio "+yytext()+" exprecion"); return new Symbol(simbolos.expr, yycolumn, yyline,yytext());}
+<YYINITIAL>"FOR"    {System.out.println("reconocio "+yytext()+"sentencia for"); return new Symbol(simbolos.FOR, yycolumn, yyline,yytext());}
+<YYINITIAL>"SWITCH"    {System.out.println("reconocio "+yytext()+" sentencia swhitch"); return new Symbol(simbolos.SWITCH, yycolumn, yyline,yytext());}
+<YYINITIAL>"incr"    {System.out.println("reconocio "+yytext()+" sentencia incremento"); return new Symbol(simbolos.incr, yycolumn, yyline,yytext());}
+
+<YYINITIAL> {numero}    {System.out.println("reconocio "+yytext()+" numero"); return new Symbol(simbolos.num, yycolumn, yyline,yytext());}
+
+//<YYINITIAL> {letras}    {System.out.println("reconocio "+yytext()+" letras"); return new Symbol(simbolos.letras, yycolumn, yyline,yytext());}
+
+<YYINITIAL> {cadena_texto}    {System.out.println("reconocio "+yytext()+" cadena de texto "); return new Symbol(simbolos.cadena_texto, yycolumn, yyline,yytext());}
+<YYINITIAL> {identificador}    {System.out.println("reconocio "+yytext()+" identificador o variable "); return new Symbol(simbolos.identificador, yycolumn, yyline,yytext());}
+//<YYINITIAL> {alfanumerio}    {System.out.println("reconocio "+yytext()+" alfanumerio "); return new Symbol(simbolos.alfanumerio, yycolumn, yyline,yytext());}
+
+
+
+
+//----------espacios en blanco
+[\t\r\f\n]          {/*Epacios en blanco de Ingnoran. */}
+
+//------- Errores lexicos 
+.                   {System.out.println("ERROR LEXICO "+yytext()+" LINEA: "+yyline+" columna: "+yycolumn);
+                    TError datos = new TError(yytext(),yyline,yycolumn,"Error lexico","Simbolo no exixte");
+                      TablaEL.add(datos);}

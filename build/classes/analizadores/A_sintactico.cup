@@ -1,0 +1,142 @@
+/*--------------- 1ra Area: Codigo de Usuario -----------------------*/
+//-------> importaciones, paquetes
+package analizadores;
+
+import java_cup.runtime.Symbol;
+import java.util.LinkedList;
+
+//------> Codigo para el parser,variables, metodos
+parser code
+{:
+    public String resultado="";
+    public static LinkedList<TError> TablaES = new LinkedList<TError>(); 
+
+    //Metodo al que se llama automaticamente ante algun error sintactico
+    public void syntax_error(Symbol s)
+    {        
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+        
+        System.out.println("!!!!!!! Error Sintactico Recuperado !!!!!!!");
+        System.out.println("\t\tLexema: "+lexema);
+        System.out.println("\t\tFila: "+fila);
+        System.out.println("\t\tColumna: "+columna);
+
+        TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        TablaES.add(datos);
+       
+        
+    }
+
+    //Metodo al que se llama en el momento en que ya no es posible una recuperacion de errores
+    public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception
+    {        
+        String lexema = s.value.toString();
+        int fila = s.right;
+        int columna = s.left;
+        
+        System.out.println("!!!!!!! Error Sintactico, Panic Mode !!!!!!! ");
+        System.out.println("\t\tLexema: "+lexema);
+        System.out.println("\t\tFila: "+fila);
+        System.out.println("\t\tColumna: "+columna);
+
+        TError datos = new TError(lexema,fila,columna,"Error Sintactico","Caracter no esperado");
+        TablaES.add(datos);
+     
+    }
+:}
+
+//------> Codigo para las acciones gramaticales
+action code
+{:
+:}
+
+/*--------------- 2da Area: Declaraciones -----------------------*/
+//------> declaracion de terminales 
+terminal comentario,num,FOR,incr,SWITCH,expr,mas,menos,por,div,pot,comp,dist,menor,mayor,or,and,Labre,Lcierra,Cabre,Cciera,set,IF,ELSE,WHILE,puts,$,cadena_texto,identificador;
+
+
+//------> declaracion de no terminales
+non terminal String INICIO,sentcom,sentfor,sentwhitch,sentexp,sentelse,declaracion,Declaraciones,bloquedeSentencias,sentencias,sentencia,sentif,sentwhile,sentputs,exp,cond;
+
+
+//----> precedencia de menor a mayor 
+precedence left mas, menos;
+precedence left por, div;
+precedence left pot;
+precedence left and, or;
+
+
+start with INICIO;
+
+
+INICIO::=  Declaraciones  bloquedeSentencias  | bloquedeSentencias;
+ 
+Declaraciones::= declaracion Declaraciones | declaracion;
+
+declaracion::= set identificador identificador:a{:System.out.println(a);:}|
+                set identificador sentexp;
+        
+bloquedeSentencias::= sentencias|;
+
+sentencias::= sentencia sentencias | sentencia;
+
+
+sentif::=IF Labre cond Lcierra 
+            Labre bloquedeSentencias Lcierra sentelse;
+
+sentelse::= ELSE Labre bloquedeSentencias Lcierra|;
+
+sentwhile::=WHILE Labre cond Lcierra
+            Labre bloquedeSentencias Lcierra;
+
+sentputs::=puts cadena_texto|
+           puts $ identificador;
+
+sentexp::= Cabre  expr exp Cciera|
+           exp;
+
+sentcom::= comentario  cadena_texto ;
+
+sentfor::= FOR Labre set identificador num Lcierra Labre cond Lcierra Labre incr identificador Lcierra
+                Labre bloquedeSentencias Lcierra;
+
+sentwhitch::= SWITCH $ identificador 
+            Labre bloquedeSentencias Lcierra |SWITCH identificador 
+            Labre bloquedeSentencias Lcierra;
+
+
+
+sentencia::= sentif|
+             sentwhile|
+             sentputs|
+             sentexp|
+             sentcom|
+             sentfor|
+              sentwhitch;
+
+
+exp ::= exp:a mas exp:b {: int a1 = Integer.parseInt(a);
+                            int b1 = Integer.parseInt(b);
+                            int c = a1+b1;
+                         System.out.println(c);  :}|
+    exp menos exp|
+    exp por exp|
+    exp div exp|
+    exp pot|
+    num:a {:String b = String.valueOf(a); RESULT = b ; :}|
+    Cabre exp Cciera|
+    $ identificador;
+
+
+cond ::= cond or cond|
+        cond and cond|
+        exp menor exp|
+        exp mayor exp|
+        exp dist exp|
+        exp comp exp|
+        Labre cond Lcierra;
+
+/*--------------- 3ra Area: Reglas Semanticas -----------------------*/
+
